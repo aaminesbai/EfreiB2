@@ -1,141 +1,171 @@
-# .circleci/config.yml
+# Configuration du fichier .circleci/config.yml
 
 version: 2.1
+
+# Définition des Orbs nécessaires
 orbs:
   node: circleci/node@5
+
+# Définition des différents jobs
 jobs:
+  # Installation des dépendances
   dependencies_install:
     executor: node/default
     steps:
       - checkout
-      - run: echo "installing dependencies"
-  code_analysing:
+      - run: echo "Installing dependencies..."
+
+  # Analyse du code
+  code_analysis:
     executor: node/default
     steps:
       - checkout
-      - run: echo "code analysing ..."
+      - run: echo "Performing code analysis..."
+
+  # Nettoyage et packaging
   cleaning_packaging:
     executor: node/default
     steps:
       - checkout
-      - run: echo "cleaning and packaging ..."
-  #################################################
+      - run: echo "Cleaning and packaging..."
+
+  # Tests unitaires
   unit_tests:
     executor: node/default
     steps:
       - checkout
-      - run: echo "unit tests"
+      - run: echo "Running unit tests..."
+
+  # Tests d'intégration
   integration_tests:
     executor: node/default
     steps:
       - checkout
-      - run: echo "integration tests"
+      - run: echo "Running integration tests..."
+
+  # Tests de régression
   regression_tests:
     executor: node/default
     steps:
       - checkout
-      - run: echo "regression tests"
+      - run: echo "Running regression tests..."
+
+  # Tests de performance
   performance_tests:
     executor: node/default
     steps:
       - checkout
-      - run: echo "performance tests"
+      - run: echo "Running performance tests..."
+
+  # Tests de sécurité
   security_tests:
     executor: node/default
     steps:
       - checkout
-      - run: echo "security tests"
+      - run: echo "Running security tests..."
+
+  # Tests d'accessibilité
   access_tests:
     executor: node/default
     steps:
       - checkout
-      - run: echo "access tests"
-  #################################################################
+      - run: echo "Running accessibility tests..."
+
+  # Préparation de l'environnement de déploiement
   preparing_deploying_environment:
     executor: node/default
     steps:
       - checkout
-      - run: echo "preparation of deploying environment"
-  application_deployement:
+      - run: echo "Preparing deployment environment..."
+
+  # Déploiement de l'application
+  application_deployment:
     executor: node/default
     steps:
       - checkout
-      - run: echo "application deployement"
+      - run: echo "Deploying application..."
+
+  # Tests de vérification
   verification_tests:
     executor: node/default
     steps:
       - checkout
-      - run: echo "verification tests"
-  functionning_validation_tests:
+      - run: echo "Running verification tests..."
+
+  # Tests de validation fonctionnelle
+  function_validation_tests:
     executor: node/default
     steps:
       - checkout
-      - run: echo "functionning validation tests"
+      - run: echo "Running functional validation tests..."
+
+  # Tests de charge
   charge_tests:
     executor: node/default
     steps:
       - checkout
-      - run: echo "charge tests"
+      - run: echo "Running load tests..."
+
+  # Déploiement sur l'environnement de développement
   deploy_dev:
     executor: node/default
     steps:
       - checkout
-      - run: echo "Deploying to development environment"
+      - run: echo "Deploying to development environment..."
+
+  # Déploiement sur l'environnement de production
   deploy_prod:
     executor: node/default
     steps:
       - checkout
-      - run: echo "Deploying to production environment"
+      - run: echo "Deploying to production environment..."
+
+  # Surveillance et suivi
   monitoring:
     executor: node/default
     steps:
       - checkout
-      - run: echo "monitoring"
+      - run: echo "Monitoring..."
 
-###################################################################
+# Définition des workflows
 workflows:
+  version: 2
   build-test-deploy:
     jobs:
+      # Exécution des étapes dans l'ordre défini
       - dependencies_install
-      - code_analysing
+      - code_analysis
       - cleaning_packaging
-      ##############
       - unit_tests:
           requires:
             - dependencies_install
-            - code_analysing
+            - code_analysis
             - cleaning_packaging
-
       - integration_tests:
           requires:
             - dependencies_install
-            - code_analysing
+            - code_analysis
             - cleaning_packaging
-
       - regression_tests:
           requires:
             - dependencies_install
-            - code_analysing
+            - code_analysis
             - cleaning_packaging
-
       - performance_tests:
           requires:
             - dependencies_install
-            - code_analysing
+            - code_analysis
             - cleaning_packaging
-
       - security_tests:
           requires:
             - dependencies_install
-            - code_analysing
+            - code_analysis
             - cleaning_packaging
-
       - access_tests:
           requires:
             - dependencies_install
-            - code_analysing
+            - code_analysis
             - cleaning_packaging
-      ###############
       - preparing_deploying_environment:
           requires:
             - unit_tests
@@ -144,8 +174,7 @@ workflows:
             - performance_tests
             - security_tests
             - access_tests
-
-      - application_deployement:
+      - application_deployment:
           requires:
             - unit_tests
             - integration_tests
@@ -153,7 +182,6 @@ workflows:
             - performance_tests
             - security_tests
             - access_tests
-
       - verification_tests:
           requires:
             - unit_tests
@@ -162,8 +190,7 @@ workflows:
             - performance_tests
             - security_tests
             - access_tests
-
-      - functionning_validation_tests:
+      - function_validation_tests:
           requires:
             - unit_tests
             - integration_tests
@@ -171,7 +198,6 @@ workflows:
             - performance_tests
             - security_tests
             - access_tests
-
       - charge_tests:
           requires:
             - unit_tests
@@ -180,7 +206,6 @@ workflows:
             - performance_tests
             - security_tests
             - access_tests
-
       - deploy_dev:
           requires:
             - unit_tests
@@ -189,7 +214,6 @@ workflows:
             - performance_tests
             - security_tests
             - access_tests
-
       - deploy_prod:
           requires:
             - unit_tests
@@ -198,7 +222,6 @@ workflows:
             - performance_tests
             - security_tests
             - access_tests
-
       - monitoring:
           requires:
             - unit_tests
@@ -207,32 +230,3 @@ workflows:
             - performance_tests
             - security_tests
             - access_tests
-
-
-
-
-
-
-
-
-
-      # - build
-      # - unit-tests:
-      #     requires:
-      #       - build
-      # - deploy:
-      #     requires:
-      #       - unit-tests
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - /feature\//*/
-      #           - /hotfix\//*/
-      #           - master
-      # - deploy_prod:
-      #     requires:
-      #       - unit-tests
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
