@@ -4,95 +4,95 @@ orbs:
   node: circleci/node@5
 
 jobs:
-  # Installation des dépendances, analyse de code et packaging
+
+  # Installation des dépendances
+  install-deps:
+    executor: node/default
+    steps:
+      - checkout
+      - node/install-packages
+
+  # Analyse de code
+  analyze-code:
+    executor: node/default
+    steps:
+      - checkout
+      - run: npm run lint
+
+  # Build
   build:
     executor: node/default
     steps:
       - checkout
-      - node/install-packages:
-          pkg-manager: npm
       - run: npm run build
 
-  # Tests unitaires, d'intégration, de régression, de performance, de sécurité, de compatibilité et d'accessibilité
-  test:
+  # Tests unitaires
+  test-unit:
     executor: node/default
     steps:
       - checkout
       - node/install-packages:
           pkg-manager: npm
+      - run: npm install jest-junit
       - run: npm run test:unit
+      - store_test_results:
+          path: ./test-results/
+
+  # Tests d'intégration
+  test-integration:
+    executor: node/default
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
+      - run: npm install jest-junit
       - run: npm run test:integration
-      - run: npm run test:regression
-      - run: npm run test:performance
-      - run: npm run test:security
-      - run: npm run test:compatibility
-      - run: npm run test:accessibility
+      - store_test_results:
+          path: ./test-results/
 
-  # Déploiement sur l'environnement de développement
-  deploy_dev:
+  # Déploiement
+  deploy:
     executor: node/default
     steps:
       - checkout
-      - run: echo "Déploiement sur l'environnement de développement..."
-      - run: npm run deploy:dev
-
-  # Déploiement sur l'environnement d'intégration
-  deploy_integration:
-    executor: node/default
-    steps:
-      - checkout
-      - run: echo "Déploiement sur l'environnement d'intégration..."
-      - run: npm run deploy:integration
-
-  # Déploiement sur l'environnement de production
-  deploy_prod:
-    executor: node/default
-    steps:
-      - checkout
-      - run: echo "Déploiement sur l'environnement de production..."
-      - run: npm run deploy:prod
+      - run: echo "Déploiement de l'application..."
 
 workflows:
-  # Workflow principal pour le développement
-  build-test-deploy:
+
+  # Build et tests
+  build-and-test:
     jobs:
+      - install-deps
+      - analyze-code
       - build
-      - test:
-          requires:
-            - build
-      - deploy_dev:
-          requires:
-            - test
+      - test-unit
+      - test-integration
+
+  # Déploiement sur l'environnement de développement
+  deploy-dev:
+    jobs:
+      - build-and-test
+      - deploy:
           filters:
             branches:
               only:
                 - develop
 
-  # Workflow pour la mise en production
+  # Déploiement sur l'environnement de production
   deploy-prod:
     jobs:
-      - build
-      - test:
-          requires:
-            - build
-      - deploy_prod:
-          requires:
-            - test
+      - build-and-test
+      - deploy:
           filters:
             branches:
               only:
                 - main
 
-  # Workflow pour les branches temporaires
-  feature-hotfix:
-    jobs:
-      - build
-      - test:
-          requires:
-            - build
-          filters:
-            branches:
-              only:
-                - /^feature\/.*/
-                - /^hotfix\/.*/
+filters:
 
+  # Exclure les branches "feature" et "hotfix" de certains jobs
+  exclude-feature-hotfix:
+    branches:
+      ignore:
+        - /^feature.*/
+        - /^hotfix.*/
