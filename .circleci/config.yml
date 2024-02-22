@@ -2,32 +2,32 @@
 
 version: 2.1
 
-# Définition des Orbs nécessaires
+# Utilisation des Orbs pour simplifier la configuration
 orbs:
   node: circleci/node@5
 
-# Définition des différents jobs
+# Définition des jobs pour les différentes étapes du pipeline
 jobs:
   # Installation des dépendances
-  dependencies_install:
+  install_dependencies:
     executor: node/default
     steps:
       - checkout
-      - run: echo "Installing dependencies..."
+      - run: echo "Installing project dependencies..."
 
-  # Analyse du code
+  # Analyse du code source
   code_analysis:
     executor: node/default
     steps:
       - checkout
       - run: echo "Performing code analysis..."
 
-  # Nettoyage et packaging
-  cleaning_packaging:
+  # Nettoyage et packaging de l'application
+  clean_and_package:
     executor: node/default
     steps:
       - checkout
-      - run: echo "Cleaning and packaging..."
+      - run: echo "Cleaning and packaging the application..."
 
   # Tests unitaires
   unit_tests:
@@ -65,168 +65,94 @@ jobs:
       - run: echo "Running security tests..."
 
   # Tests d'accessibilité
-  access_tests:
+  accessibility_tests:
     executor: node/default
     steps:
       - checkout
       - run: echo "Running accessibility tests..."
 
   # Préparation de l'environnement de déploiement
-  preparing_deploying_environment:
+  prepare_deployment_environment:
     executor: node/default
     steps:
       - checkout
       - run: echo "Preparing deployment environment..."
 
-  # Déploiement de l'application
-  application_deployment:
-    executor: node/default
-    steps:
-      - checkout
-      - run: echo "Deploying application..."
-
-  # Tests de vérification
-  verification_tests:
-    executor: node/default
-    steps:
-      - checkout
-      - run: echo "Running verification tests..."
-
-  # Tests de validation fonctionnelle
-  function_validation_tests:
-    executor: node/default
-    steps:
-      - checkout
-      - run: echo "Running functional validation tests..."
-
-  # Tests de charge
-  charge_tests:
-    executor: node/default
-    steps:
-      - checkout
-      - run: echo "Running load tests..."
-
-  # Déploiement sur l'environnement de développement
-  deploy_dev:
+  # Déploiement de l'application sur l'environnement de développement
+  deploy_to_dev:
     executor: node/default
     steps:
       - checkout
       - run: echo "Deploying to development environment..."
 
-  # Déploiement sur l'environnement de production
-  deploy_prod:
+  # Déploiement de l'application sur l'environnement de production
+  deploy_to_prod:
     executor: node/default
     steps:
       - checkout
       - run: echo "Deploying to production environment..."
 
-  # Surveillance et suivi
+  # Surveillance et suivi après déploiement
   monitoring:
     executor: node/default
     steps:
       - checkout
-      - run: echo "Monitoring..."
+      - run: echo "Monitoring the deployed application..."
 
-# Définition des workflows
+# Définition du workflow pour organiser les étapes du pipeline
 workflows:
   version: 2
   build-test-deploy:
     jobs:
       # Exécution des étapes dans l'ordre défini
-      - dependencies_install
+      - install_dependencies
       - code_analysis
-      - cleaning_packaging
+      - clean_and_package
       - unit_tests:
           requires:
-            - dependencies_install
+            - install_dependencies
             - code_analysis
-            - cleaning_packaging
+            - clean_and_package
       - integration_tests:
           requires:
-            - dependencies_install
+            - install_dependencies
             - code_analysis
-            - cleaning_packaging
+            - clean_and_package
       - regression_tests:
           requires:
-            - dependencies_install
+            - install_dependencies
             - code_analysis
-            - cleaning_packaging
+            - clean_and_package
       - performance_tests:
           requires:
-            - dependencies_install
+            - install_dependencies
             - code_analysis
-            - cleaning_packaging
+            - clean_and_package
       - security_tests:
           requires:
-            - dependencies_install
+            - install_dependencies
             - code_analysis
-            - cleaning_packaging
-      - access_tests:
+            - clean_and_package
+      - accessibility_tests:
           requires:
-            - dependencies_install
+            - install_dependencies
             - code_analysis
-            - cleaning_packaging
-      - preparing_deploying_environment:
+            - clean_and_package
+      - prepare_deployment_environment:
           requires:
             - unit_tests
             - integration_tests
             - regression_tests
             - performance_tests
             - security_tests
-            - access_tests
-      - application_deployment:
+            - accessibility_tests
+      - deploy_to_dev:
           requires:
-            - unit_tests
-            - integration_tests
-            - regression_tests
-            - performance_tests
-            - security_tests
-            - access_tests
-      - verification_tests:
+            - prepare_deployment_environment
+      - deploy_to_prod:
           requires:
-            - unit_tests
-            - integration_tests
-            - regression_tests
-            - performance_tests
-            - security_tests
-            - access_tests
-      - function_validation_tests:
-          requires:
-            - unit_tests
-            - integration_tests
-            - regression_tests
-            - performance_tests
-            - security_tests
-            - access_tests
-      - charge_tests:
-          requires:
-            - unit_tests
-            - integration_tests
-            - regression_tests
-            - performance_tests
-            - security_tests
-            - access_tests
-      - deploy_dev:
-          requires:
-            - unit_tests
-            - integration_tests
-            - regression_tests
-            - performance_tests
-            - security_tests
-            - access_tests
-      - deploy_prod:
-          requires:
-            - unit_tests
-            - integration_tests
-            - regression_tests
-            - performance_tests
-            - security_tests
-            - access_tests
+            - prepare_deployment_environment
       - monitoring:
           requires:
-            - unit_tests
-            - integration_tests
-            - regression_tests
-            - performance_tests
-            - security_tests
-            - access_tests
+            - deploy_to_dev
+            - deploy_to_prod
