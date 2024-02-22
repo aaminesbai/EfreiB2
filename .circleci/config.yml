@@ -1,135 +1,238 @@
-version: 2.1
+# .circleci/config.yml
 
+version: 2.1
 orbs:
   node: circleci/node@5
-
 jobs:
-
-# Installation des dépendances
-  build:
+  dependencies_install:
     executor: node/default
     steps:
       - checkout
-      - node/install-packages:
-          pkg-manager: npm
-
-# Analyse de code
-  lint:
+      - run: echo "installing dependencies"
+  code_analysing:
     executor: node/default
     steps:
       - checkout
-      - run: npm run lint
-
-# Tests unitaires
-  test-unit:
+      - run: echo "code analysing ..."
+  cleaning_packaging:
     executor: node/default
     steps:
       - checkout
-      - node/install-packages:
-          pkg-manager: npm
-      - run: npm run test:unit
-
-# Tests d'intégration
-  test-integration:
+      - run: echo "cleaning and packaging ..."
+  #################################################
+  unit_tests:
     executor: node/default
     steps:
       - checkout
-      - node/install-packages:
-          pkg-manager: npm
-      - run: npm run test:integration
-
-# Déploiement sur l'environnement de développement
-  deploy-dev:
+      - run: echo "unit tests"
+  integration_tests:
     executor: node/default
     steps:
       - checkout
-      - run: echo "Déploiement sur l'environnement de développement..."
-
-# Déploiement sur l'environnement d'intégration
-  deploy-integration:
+      - run: echo "integration tests"
+  regression_tests:
     executor: node/default
     steps:
       - checkout
-      - run: echo "Déploiement sur l'environnement d'intégration..."
-
-# Déploiement sur l'environnement de production
-  deploy-prod:
+      - run: echo "regression tests"
+  performance_tests:
     executor: node/default
     steps:
       - checkout
-      - run: echo "Déploiement sur l'environnement de production..."
+      - run: echo "performance tests"
+  security_tests:
+    executor: node/default
+    steps:
+      - checkout
+      - run: echo "security tests"
+  access_tests:
+    executor: node/default
+    steps:
+      - checkout
+      - run: echo "access tests"
+  #################################################################
+  preparing_deploying_environment:
+    executor: node/default
+    steps:
+      - checkout
+      - run: echo "preparation of deploying environment"
+  application_deployement:
+    executor: node/default
+    steps:
+      - checkout
+      - run: echo "application deployement"
+  verification_tests:
+    executor: node/default
+    steps:
+      - checkout
+      - run: echo "verification tests"
+  functionning_validation_tests:
+    executor: node/default
+    steps:
+      - checkout
+      - run: echo "functionning validation tests"
+  charge_tests:
+    executor: node/default
+    steps:
+      - checkout
+      - run: echo "charge tests"
+  deploy_dev:
+    executor: node/default
+    steps:
+      - checkout
+      - run: echo "Deploying to development environment"
+  deploy_prod:
+    executor: node/default
+    steps:
+      - checkout
+      - run: echo "Deploying to production environment"
+  monitoring:
+    executor: node/default
+    steps:
+      - checkout
+      - run: echo "monitoring"
 
+###################################################################
 workflows:
-
-# Build, tests et déploiement sur l'environnement de développement
-  build-test-deploy-dev:
+  build-test-deploy:
     jobs:
-      - build
-      - lint:
+      - dependencies_install
+      - code_analysing
+      - cleaning_packaging
+      ##############
+      - unit_tests:
           requires:
-            - build
-      - test-unit:
-          requires:
-            - build
-      - test-integration:
-          requires:
-            - build
-      - deploy-dev:
-          requires:
-            - test-integration
-          filters:
-            branches:
-              only:
-                - develop
+            - dependencies_install
+            - code_analysing
+            - cleaning_packaging
 
-# Build, tests et déploiement sur l'environnement d'intégration
-  build-test-deploy-integration:
-    jobs:
-      - build
-      - lint:
+      - integration_tests:
           requires:
-            - build
-      - test-unit:
-          requires:
-            - build
-      - test-integration:
-          requires:
-            - build
-      - deploy-integration:
-          requires:
-            - test-integration
-          filters:
-            branches:
-              only:
-                - integration
+            - dependencies_install
+            - code_analysing
+            - cleaning_packaging
 
-# Build, tests et déploiement sur l'environnement de production
-  build-test-deploy-prod:
-    jobs:
-      - build
-      - lint:
+      - regression_tests:
           requires:
-            - build
-      - test-unit:
-          requires:
-            - build
-      - test-integration:
-          requires:
-            - build
-      - deploy-prod:
-          requires:
-            - test-integration
-          filters:
-            branches:
-              only:
-                - main
+            - dependencies_install
+            - code_analysing
+            - cleaning_packaging
 
-filters:
+      - performance_tests:
+          requires:
+            - dependencies_install
+            - code_analysing
+            - cleaning_packaging
 
-# Exclusion des branches "feature" et "hotfix"
-  exclude-feature-hotfix:
-    branches:
-      ignore:
-        - /^feature.*/
-        - /^hotfix.*/
+      - security_tests:
+          requires:
+            - dependencies_install
+            - code_analysing
+            - cleaning_packaging
 
+      - access_tests:
+          requires:
+            - dependencies_install
+            - code_analysing
+            - cleaning_packaging
+      ###############
+      - preparing_deploying_environment:
+          requires:
+            - unit_tests
+            - integration_tests
+            - regression_tests
+            - performance_tests
+            - security_tests
+            - access_tests
+
+      - application_deployement:
+          requires:
+            - unit_tests
+            - integration_tests
+            - regression_tests
+            - performance_tests
+            - security_tests
+            - access_tests
+
+      - verification_tests:
+          requires:
+            - unit_tests
+            - integration_tests
+            - regression_tests
+            - performance_tests
+            - security_tests
+            - access_tests
+
+      - functionning_validation_tests:
+          requires:
+            - unit_tests
+            - integration_tests
+            - regression_tests
+            - performance_tests
+            - security_tests
+            - access_tests
+
+      - charge_tests:
+          requires:
+            - unit_tests
+            - integration_tests
+            - regression_tests
+            - performance_tests
+            - security_tests
+            - access_tests
+
+      - deploy_dev:
+          requires:
+            - unit_tests
+            - integration_tests
+            - regression_tests
+            - performance_tests
+            - security_tests
+            - access_tests
+
+      - deploy_prod:
+          requires:
+            - unit_tests
+            - integration_tests
+            - regression_tests
+            - performance_tests
+            - security_tests
+            - access_tests
+
+      - monitoring:
+          requires:
+            - unit_tests
+            - integration_tests
+            - regression_tests
+            - performance_tests
+            - security_tests
+            - access_tests
+
+
+
+
+
+
+
+
+
+      # - build
+      # - unit-tests:
+      #     requires:
+      #       - build
+      # - deploy:
+      #     requires:
+      #       - unit-tests
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - /feature\//*/
+      #           - /hotfix\//*/
+      #           - master
+      # - deploy_prod:
+      #     requires:
+      #       - unit-tests
+      #     filters:
+      #       branches:
+      #         only:
+      #           - master
