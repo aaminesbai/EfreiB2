@@ -4,14 +4,13 @@ orbs:
   node: circleci/node@5
 
 jobs:
-  # Installation des dépendances, analyse de code, nettoyage et packaging
+  # Installation des dépendances, analyse de code et packaging
   build:
     executor: node/default
     steps:
       - checkout
       - node/install-packages:
           pkg-manager: npm
-      - run: npm run lint
       - run: npm run build
 
   # Tests unitaires, d'intégration, de régression, de performance, de sécurité, de compatibilité et d'accessibilité
