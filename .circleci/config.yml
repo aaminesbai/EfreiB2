@@ -5,84 +5,120 @@ orbs:
 
 jobs:
 
-  # Installation des dépendances
-  install-deps:
+# Installation des dépendances
+  build:
     executor: node/default
     steps:
       - checkout
-      - node/install-packages
+      - node/install-packages:
+          pkg-manager: npm
 
-  # Analyse de code
-  analyze-code:
+# Analyse de code
+  lint:
     executor: node/default
     steps:
       - checkout
       - run: npm run lint
 
-  # Build
-  build:
-    executor: node/default
-    steps:
-      - checkout
-      - run: npm run build
-
-  # Tests unitaires
+# Tests unitaires
   test-unit:
     executor: node/default
     steps:
       - checkout
       - node/install-packages:
           pkg-manager: npm
-      - run: npm install jest-junit
       - run: npm run test:unit
-      - store_test_results:
-          path: ./test-results/
 
-  # Tests d'intégration
+# Tests d'intégration
   test-integration:
     executor: node/default
     steps:
       - checkout
       - node/install-packages:
           pkg-manager: npm
-      - run: npm install jest-junit
       - run: npm run test:integration
-      - store_test_results:
-          path: ./test-results/
 
-  # Déploiement
-  deploy:
+# Déploiement sur l'environnement de développement
+  deploy-dev:
     executor: node/default
     steps:
       - checkout
-      - run: echo "Déploiement de l'application..."
+      - run: echo "Déploiement sur l'environnement de développement..."
+
+# Déploiement sur l'environnement d'intégration
+  deploy-integration:
+    executor: node/default
+    steps:
+      - checkout
+      - run: echo "Déploiement sur l'environnement d'intégration..."
+
+# Déploiement sur l'environnement de production
+  deploy-prod:
+    executor: node/default
+    steps:
+      - checkout
+      - run: echo "Déploiement sur l'environnement de production..."
 
 workflows:
 
-  # Build et tests
-  build-and-test:
+# Build, tests et déploiement sur l'environnement de développement
+  build-test-deploy-dev:
     jobs:
-      - install-deps
-      - analyze-code
       - build
-      - test-unit
-      - test-integration
-
-  # Déploiement sur l'environnement de développement
-  deploy-dev:
-    jobs:
-      - build-and-test
-      - deploy:
+      - lint:
+          requires:
+            - build
+      - test-unit:
+          requires:
+            - build
+      - test-integration:
+          requires:
+            - build
+      - deploy-dev:
+          requires:
+            - test-integration
           filters:
             branches:
               only:
                 - develop
 
-  # Déploiement sur l'environnement de production
-  deploy-prod:
+# Build, tests et déploiement sur l'environnement d'intégration
+  build-test-deploy-integration:
     jobs:
-      - build-and-test
-      - deploy:
+      - build
+      - lint:
+          requires:
+            - build
+      - test-unit:
+          requires:
+            - build
+      - test-integration:
+          requires:
+            - build
+      - deploy-integration:
+          requires:
+            - test-integration
+          filters:
+            branches:
+              only:
+                - integration
+
+# Build, tests et déploiement sur l'environnement de production
+  build-test-deploy-prod:
+    jobs:
+      - build
+      - lint:
+          requires:
+            - build
+      - test-unit:
+          requires:
+            - build
+      - test-integration:
+          requires:
+            - build
+      - deploy-prod:
+          requires:
+            - test-integration
           filters:
             branches:
               only:
@@ -90,9 +126,10 @@ workflows:
 
 filters:
 
-  # Exclure les branches "feature" et "hotfix" de certains jobs
+# Exclusion des branches "feature" et "hotfix"
   exclude-feature-hotfix:
     branches:
       ignore:
         - /^feature.*/
         - /^hotfix.*/
+
