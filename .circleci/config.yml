@@ -1,23 +1,99 @@
 version: 2.1
+
 orbs:
   node: circleci/node@5
+
 jobs:
-  test-node:
+  # Installation des dépendances, analyse de code, nettoyage et packaging
+  build:
     executor: node/default
-    environment:
-      JEST_JUNIT_OUTPUT_DIR: ./test-results/
     steps:
       - checkout
       - node/install-packages:
           pkg-manager: npm
-      - run:
-          command: npm install jest-junit
-      - run:
-          name: Run tests
-          command: npm run test:ci
-      - store_test_results:
-          path: ./test-results/
+      - run: npm run lint
+      - run: npm run build
+
+  # Tests unitaires, d'intégration, de régression, de performance, de sécurité, de compatibilité et d'accessibilité
+  test:
+    executor: node/default
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
+      - run: npm run test:unit
+      - run: npm run test:integration
+      - run: npm run test:regression
+      - run: npm run test:performance
+      - run: npm run test:security
+      - run: npm run test:compatibility
+      - run: npm run test:accessibility
+
+  # Déploiement sur l'environnement de développement
+  deploy_dev:
+    executor: node/default
+    steps:
+      - checkout
+      - run: echo "Déploiement sur l'environnement de développement..."
+      - run: npm run deploy:dev
+
+  # Déploiement sur l'environnement d'intégration
+  deploy_integration:
+    executor: node/default
+    steps:
+      - checkout
+      - run: echo "Déploiement sur l'environnement d'intégration..."
+      - run: npm run deploy:integration
+
+  # Déploiement sur l'environnement de production
+  deploy_prod:
+    executor: node/default
+    steps:
+      - checkout
+      - run: echo "Déploiement sur l'environnement de production..."
+      - run: npm run deploy:prod
+
 workflows:
-  build-and-test:
+  # Workflow principal pour le développement
+  build-test-deploy:
     jobs:
-      - test-node
+      - build
+      - test:
+          requires:
+            - build
+      - deploy_dev:
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - develop
+
+  # Workflow pour la mise en production
+  deploy-prod:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
+      - deploy_prod:
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - main
+
+  # Workflow pour les branches temporaires
+  feature-hotfix:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - /^feature\/.*/
+                - /^hotfix\/.*/
+
