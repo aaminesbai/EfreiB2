@@ -1,154 +1,150 @@
-# Configuration du fichier .circleci/config.yml
-
 version: 2.1
 
-# Définition des Orbs requis
 orbs:
   node: circleci/node@5
 
-# Définition des différents jobs
+# définition des différents jobs
 jobs:
-  # Installation des dépendances
+  # installation des dépendances
   installation_dependances:
     executor: node/default
     steps:
       - checkout
       - run: echo "installation des dépendances..."
 
-  # Analyse du code
+  # analyse du code
   analyse_code:
     executor: node/default
     steps:
       - checkout
       - run: echo "analyse du code..."
 
-  # Nettoyage et empaquetage
+  # nettoyage et empaquetage
   nettoyage_empaquetage:
     executor: node/default
     steps:
       - checkout
       - run: echo "nettoyage et empaquetage..."
 
-  # Tests unitaires
+  # tests unitaires
   tests_unitaires:
     executor: node/default
     steps:
       - checkout
       - run: echo "exécution des tests unitaires..."
 
-  # Tests d'intégration
+  # tests d'intégration
   tests_integration:
     executor: node/default
     steps:
       - checkout
       - run: echo "exécution des tests d'intégration..."
 
-  # Tests de régression
+  # tests de régression
   tests_regression:
     executor: node/default
     steps:
       - checkout
       - run: echo "exécution des tests de régression..."
 
-  # Tests de performance
+  # tests de performance
   tests_performance:
     executor: node/default
     steps:
       - checkout
       - run: echo "exécution des tests de performance..."
 
-  # Tests de sécurité
+  # tests de sécurité
   tests_securite:
     executor: node/default
     steps:
       - checkout
       - run: echo "exécution des tests de sécurité..."
 
-  # Tests d'accessibilité
+  # tests d'accessibilité
   tests_accessibilite:
     executor: node/default
     steps:
       - checkout
       - run: echo "exécution des tests d'accessibilité..."
 
-  # Préparation de l'environnement de déploiement
+  # préparation environnement de déploiement
   preparation_deployment:
     executor: node/default
     steps:
       - checkout
       - run: echo "préparation de l'environnement de déploiement..."
 
-  # Déploiement de l'application
+  # déploiement de l'application
   deployment_application:
     executor: node/default
     steps:
       - checkout
       - run: echo "déploiement de l'application..."
 
-  # Tests de vérification
+  # tests de vérification
   tests_verification:
     executor: node/default
     steps:
       - checkout
       - run: echo "exécution des tests de vérification..."
 
-  # Tests de validation fonctionnelle
+  # tests de validation fonctionnelle
   tests_validation_fonctionnelle:
     executor: node/default
     steps:
       - checkout
       - run: echo "exécution des tests de validation fonctionnelle..."
 
-  # Tests de charge
+  # tests de charge
   tests_charge:
     executor: node/default
     steps:
       - checkout
       - run: echo "exécution des tests de charge..."
 
-  # Déploiement sur l'environnement de développement
+  # déploiement sur l'environnement de développement
   deployment_dev:
     executor: node/default
     steps:
       - checkout
       - run: echo "déploiement sur l'environnement de développement..."
 
-  # Déploiement sur l'environnement de production
+  # déploiement sur l'environnement de production
   deployment_prod:
     executor: node/default
     steps:
       - checkout
       - run: echo "déploiement sur l'environnement de production..."
 
-  # Déploiement sur l'environnement de release
+  # déploiement sur l'environnement de release
   deployment_release:
     executor: node/default
     steps:
       - checkout
       - run: echo "déploiement sur l'environnement de release..."
 
-  # Surveillance et suivi
+  # surveillance et suivi
   surveillance:
     executor: node/default
     steps:
       - checkout
       - run: echo "surveillance..."
-
-###################################################################
-# Définition des workflows
+# définition des workflows
 workflows:
   version: 2
   build-test-deploy:
     jobs:
-      # Exécution des étapes dans l'ordre spécifié
       - installation_dependances
       - analyse_code
       - nettoyage_empaquetage
+      # tests unitaires
       - tests_unitaires:
           requires:
             - installation_dependances
             - analyse_code
             - nettoyage_empaquetage
+      # tests d'intégration
       - tests_integration:
           requires:
             - installation_dependances
@@ -159,7 +155,7 @@ workflows:
               ignore:
                 - /^feature\/.*$/
                 - /^hotfix\/.*$/
-
+      # tests de régression
       - tests_regression:
           requires:
             - installation_dependances
@@ -170,7 +166,7 @@ workflows:
               ignore:
                 - /^feature\/.*$/
                 - /^hotfix\/.*$/
-
+      # tests de performance
       - tests_performance:
           requires:
             - installation_dependances
@@ -181,13 +177,13 @@ workflows:
               ignore:
                 - /^feature\/.*$/
                 - /^hotfix\/.*$/
-
+      # tests de sécurité
       - tests_securite:
           requires:
             - installation_dependances
             - analyse_code
             - nettoyage_empaquetage
-
+      # tests d'accessibilité
       - tests_accessibilite:
           requires:
             - installation_dependances
@@ -197,7 +193,7 @@ workflows:
             branches:
               only:
                 - master
-
+      # préparation environnement de déploiement
       - preparation_deployment:
           requires:
             - tests_unitaires
@@ -211,7 +207,7 @@ workflows:
               ignore:
                 - /^feature\/.*$/
                 - /^hotfix\/.*$/
-
+      # déploiement de l'application
       - deployment_application:
           requires:
             - tests_unitaires
@@ -225,7 +221,7 @@ workflows:
               ignore:
                 - /^feature\/.*$/
                 - /^hotfix\/.*$/
-
+      # tests de vérification
       - tests_verification:
           requires:
             - tests_unitaires
@@ -239,7 +235,7 @@ workflows:
               ignore:
                 - /^feature\/.*$/
                 - /^hotfix\/.*$/
-
+      # tests de validation fonctionnelle
       - tests_validation_fonctionnelle:
           requires:
             - tests_unitaires
@@ -253,7 +249,7 @@ workflows:
               ignore:
                 - /^feature\/.*$/
                 - /^hotfix\/.*$/
-
+      # tests de charge
       - tests_charge:
           requires:
             - tests_unitaires
@@ -267,7 +263,7 @@ workflows:
               ignore:
                 - /^feature\/.*$/
                 - /^hotfix\/.*$/
-
+      # déploiement sur l'environnement de développement
       - deployment_dev:
           requires:
             - tests_unitaires
@@ -280,7 +276,7 @@ workflows:
             branches:
               only:
                 - develop
-
+      # déploiement sur l'environnement de production
       - deployment_prod:
           requires:
             - tests_unitaires
@@ -293,7 +289,7 @@ workflows:
             branches:
               only:
                 - master
-
+      # déploiement sur l'environnement de release
       - deployment_release:
           requires:
             - tests_unitaires
@@ -306,7 +302,7 @@ workflows:
             branches:
               only:
                 - /^release\/.*$/
-
+      # surveillance et suivi
       - surveillance:
           requires:
             - tests_unitaires
